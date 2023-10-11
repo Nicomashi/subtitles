@@ -1,0 +1,1398 @@
+<div class="section" id="telegram-ext-updater">
+<h1>telegram.ext.Updater<a class="headerlink" href="#telegram-ext-updater" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="telegram.ext.Updater">
+<em class="property">class </em><code class="descclassname">telegram.ext.</code><code class="descname">Updater</code><span class="sig-paren">(</span><em>token=None</em>, <em>base_url=None</em>, <em>workers=4</em>, <em>bot=None</em>, <em>private_key=None</em>, <em>private_key_password=None</em>, <em>user_sig_handler=None</em>, <em>request_kwargs=None</em>, <em>persistence=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Updater" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class, which employs the <a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>, provides a frontend to
+<a class="reference internal" href="telegram.bot.html#telegram.Bot" title="telegram.Bot"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Bot</span></code></a> to the programmer, so they can focus on coding the bot. Its purpose is to
+receive the updates from Telegram and to deliver them to said dispatcher. It also runs in a
+separate thread, so the user can interact with the bot, for example on the command line. The
+dispatcher supports handlers for different kinds of data: Updates from Telegram, basic text
+commands and even arbitrary types. The updater can be started as a polling service or, for
+production, use a webhook to receive updates. This is achieved using the WebhookServer and
+WebhookHandler classes.</p>
+<dl class="attribute">
+<dt id="telegram.ext.Updater.bot">
+<code class="descname">bot</code><a class="headerlink" href="#telegram.ext.Updater.bot" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.bot.html#telegram.Bot" title="telegram.Bot"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Bot</span></code></a> – The bot used with this Updater.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.user_sig_handler">
+<code class="descname">user_sig_handler</code><a class="headerlink" href="#telegram.ext.Updater.user_sig_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">signal</span></code> – signals the updater will respond to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.update_queue">
+<code class="descname">update_queue</code><a class="headerlink" href="#telegram.ext.Updater.update_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code> – Queue for the updates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.job_queue">
+<code class="descname">job_queue</code><a class="headerlink" href="#telegram.ext.Updater.job_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a> – Jobqueue for the updater.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.dispatcher">
+<code class="descname">dispatcher</code><a class="headerlink" href="#telegram.ext.Updater.dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a> – Dispatcher that handles the updates and
+dispatches them to the handlers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.running">
+<code class="descname">running</code><a class="headerlink" href="#telegram.ext.Updater.running" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Indicates if the updater is running.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Updater.persistence">
+<code class="descname">persistence</code><a class="headerlink" href="#telegram.ext.Updater.persistence" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.ext.basepersistence.html#telegram.ext.BasePersistence" title="telegram.ext.BasePersistence"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.BasePersistence</span></code></a> – Optional. The persistence class to
+store data that should be persistent over restarts.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>token</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – The bot’s token given by the @BotFather.</li>
+<li><strong>base_url</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – Base_url for the bot.</li>
+<li><strong>workers</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – Amount of threads in the thread pool for functions
+decorated with <code class="docutils literal notranslate"><span class="pre">@run_async</span></code>.</li>
+<li><strong>bot</strong> (<a class="reference internal" href="telegram.bot.html#telegram.Bot" title="telegram.Bot"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Bot</span></code></a>, optional) – A pre-initialized bot instance. If a pre-initialized
+bot is used, it is the user’s responsibility to create it using a <cite>Request</cite>
+instance with a large enough connection pool.</li>
+<li><strong>private_key</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes</span></code>, optional) – Private key for decryption of telegram passport data.</li>
+<li><strong>private_key_password</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bytes</span></code>, optional) – Password for above private key.</li>
+<li><strong>user_sig_handler</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>, optional) – Takes <code class="docutils literal notranslate"><span class="pre">signum,</span> <span class="pre">frame</span></code> as positional
+arguments. This will be called when a signal is received, defaults are (SIGINT,
+SIGTERM, SIGABRT) setable with <a class="reference internal" href="#telegram.ext.Updater.idle" title="telegram.ext.Updater.idle"><code class="xref py py-attr docutils literal notranslate"><span class="pre">idle</span></code></a>.</li>
+<li><strong>request_kwargs</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code>, optional) – Keyword args to control the creation of a
+<cite>telegram.utils.request.Request</cite> object (ignored if <cite>bot</cite> argument is used). The
+request_kwargs are very useful for the advanced users who would like to control the
+default timeouts and/or control the proxy used for http communication.</li>
+<li><strong>persistence</strong> (<a class="reference internal" href="telegram.ext.basepersistence.html#telegram.ext.BasePersistence" title="telegram.ext.BasePersistence"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.BasePersistence</span></code></a>, optional) – The persistence class to
+store data that should be persistent over restarts.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must supply either a <a class="reference internal" href="#telegram.ext.Updater.bot" title="telegram.ext.Updater.bot"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bot</span></code></a> or a <code class="xref py py-attr docutils literal notranslate"><span class="pre">token</span></code> argument.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If both <code class="xref py py-attr docutils literal notranslate"><span class="pre">token</span></code> and <a class="reference internal" href="#telegram.ext.Updater.bot" title="telegram.ext.Updater.bot"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bot</span></code></a> are passed or none of them.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.Updater.idle">
+<code class="descname">idle</code><span class="sig-paren">(</span><em>stop_signals=(&lt;Signals.SIGINT: 2&gt;</em>, <em>&lt;Signals.SIGTERM: 15&gt;</em>, <em>&lt;Signals.SIGABRT: 6&gt;)</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Updater.idle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blocks until one of the signals are received and stops the updater.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stop_signals</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">iterable</span></code>) – Iterable containing signals from the signal module that
+should be subscribed to. Updater.stop() will be called on receiving one of those
+signals. Defaults to (<code class="docutils literal notranslate"><span class="pre">SIGINT</span></code>, <code class="docutils literal notranslate"><span class="pre">SIGTERM</span></code>, <code class="docutils literal notranslate"><span class="pre">SIGABRT</span></code>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Updater.start_polling">
+<code class="descname">start_polling</code><span class="sig-paren">(</span><em>poll_interval=0.0</em>, <em>timeout=10</em>, <em>clean=False</em>, <em>bootstrap_retries=-1</em>, <em>read_latency=2.0</em>, <em>allowed_updates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Updater.start_polling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts polling updates from Telegram.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>poll_interval</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>, optional) – Time to wait between polling updates from
+Telegram in seconds. Default is 0.0.</li>
+<li><strong>timeout</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>, optional) – Passed to <a class="reference internal" href="telegram.bot.html#telegram.Bot.get_updates" title="telegram.Bot.get_updates"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Bot.get_updates</span></code></a>.</li>
+<li><strong>clean</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – Whether to clean any pending updates on Telegram servers
+before actually starting to poll. Default is False.</li>
+<li><strong>bootstrap_retries</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – <p>Whether the bootstrapping phase of the
+<cite>Updater</cite> will retry on failures on the Telegram server.</p>
+<ul>
+<li>&lt; 0 - retry indefinitely (default)</li>
+<li>0 - no retries</li>
+<li>&gt; 0 - retry up to X times</li>
+</ul>
+</li>
+<li><strong>allowed_updates</strong> (List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>], optional) – Passed to
+<a class="reference internal" href="telegram.bot.html#telegram.Bot.get_updates" title="telegram.Bot.get_updates"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Bot.get_updates</span></code></a>.</li>
+<li><strong>read_latency</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – Grace time in seconds for receiving
+the reply from server. Will be added to the <cite>timeout</cite> value and used as the read
+timeout from server (Default: 2).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The update queue that can be filled from the main thread.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Updater.start_webhook">
+<code class="descname">start_webhook</code><span class="sig-paren">(</span><em>listen='127.0.0.1'</em>, <em>port=80</em>, <em>url_path=''</em>, <em>cert=None</em>, <em>key=None</em>, <em>clean=False</em>, <em>bootstrap_retries=0</em>, <em>webhook_url=None</em>, <em>allowed_updates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Updater.start_webhook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a small http server to listen for updates via webhook. If cert
+and key are not provided, the webhook will be started directly on
+<a class="reference external" href="http://listen:port/url_path">http://listen:port/url_path</a>, so SSL can be handled by another
+application. Else, the webhook will be started on
+<a class="reference external" href="https://listen:port/url_path">https://listen:port/url_path</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>listen</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – IP-Address to listen on. Default <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>.</li>
+<li><strong>port</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – Port the bot should be listening on. Default <code class="docutils literal notranslate"><span class="pre">80</span></code>.</li>
+<li><strong>url_path</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – Path inside url.</li>
+<li><strong>cert</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – Path to the SSL certificate file.</li>
+<li><strong>key</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – Path to the SSL key file.</li>
+<li><strong>clean</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – Whether to clean any pending updates on Telegram servers
+before actually starting the webhook. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>bootstrap_retries</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – <p>Whether the bootstrapping phase of the
+<cite>Updater</cite> will retry on failures on the Telegram server.</p>
+<ul>
+<li>&lt; 0 - retry indefinitely (default)</li>
+<li>0 - no retries</li>
+<li>&gt; 0 - retry up to X times</li>
+</ul>
+</li>
+<li><strong>webhook_url</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – Explicitly specify the webhook url. Useful behind
+NAT, reverse proxy, etc. Default is derived from <cite>listen</cite>, <cite>port</cite> &amp; <cite>url_path</cite>.</li>
+<li><strong>allowed_updates</strong> (List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>], optional) – Passed to
+<a class="reference internal" href="telegram.bot.html#telegram.Bot.set_webhook" title="telegram.Bot.set_webhook"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Bot.set_webhook</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The update queue that can be filled from the main thread.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Updater.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Updater.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the polling/webhook thread, the dispatcher and the job queue.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+
+
+<div itemprop="articleBody">
+            
+  <div class="section" id="telegram-ext-dispatcher">
+<h1>telegram.ext.Dispatcher<a class="headerlink" href="#telegram-ext-dispatcher" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="telegram.ext.Dispatcher">
+<em class="property">class </em><code class="descclassname">telegram.ext.</code><code class="descname">Dispatcher</code><span class="sig-paren">(</span><em>bot</em>, <em>update_queue</em>, <em>workers=4</em>, <em>exception_event=None</em>, <em>job_queue=None</em>, <em>persistence=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class dispatches all kinds of updates to its registered handlers.</p>
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.bot">
+<code class="descname">bot</code><a class="headerlink" href="#telegram.ext.Dispatcher.bot" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.bot.html#telegram.Bot" title="telegram.Bot"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Bot</span></code></a> – The bot object that should be passed to the handlers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.update_queue">
+<code class="descname">update_queue</code><a class="headerlink" href="#telegram.ext.Dispatcher.update_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code> – The synchronized queue that will contain the updates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.job_queue">
+<code class="descname">job_queue</code><a class="headerlink" href="#telegram.ext.Dispatcher.job_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a> – Optional. The <a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a>
+instance to pass onto handler callbacks.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.workers">
+<code class="descname">workers</code><a class="headerlink" href="#telegram.ext.Dispatcher.workers" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> – Number of maximum concurrent worker threads for the <code class="docutils literal notranslate"><span class="pre">@run_async</span></code>
+decorator.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.user_data">
+<code class="descname">user_data</code><a class="headerlink" href="#telegram.ext.Dispatcher.user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code> – A dictionary handlers can use to store data for the user.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.chat_data">
+<code class="descname">chat_data</code><a class="headerlink" href="#telegram.ext.Dispatcher.chat_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaultdict</span></code> – A dictionary handlers can use to store data for the chat.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.persistence">
+<code class="descname">persistence</code><a class="headerlink" href="#telegram.ext.Dispatcher.persistence" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="telegram.ext.basepersistence.html#telegram.ext.BasePersistence" title="telegram.ext.BasePersistence"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.BasePersistence</span></code></a> – Optional. The persistence class to
+store data that should be persistent over restarts</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bot</strong> (<a class="reference internal" href="telegram.bot.html#telegram.Bot" title="telegram.Bot"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Bot</span></code></a>) – The bot object that should be passed to the handlers.</li>
+<li><strong>update_queue</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code>) – The synchronized queue that will contain the updates.</li>
+<li><strong>job_queue</strong> (<a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a>, optional) – The <a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a>
+instance to pass onto handler callbacks.</li>
+<li><strong>workers</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – Number of maximum concurrent worker threads for the
+<code class="docutils literal notranslate"><span class="pre">@run_async</span></code> decorator. defaults to 4.</li>
+<li><strong>persistence</strong> (<a class="reference internal" href="telegram.ext.basepersistence.html#telegram.ext.BasePersistence" title="telegram.ext.BasePersistence"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.BasePersistence</span></code></a>, optional) – The persistence class to
+store data that should be persistent over restarts</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.add_error_handler">
+<code class="descname">add_error_handler</code><span class="sig-paren">(</span><em>callback</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.add_error_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an error handler in the Dispatcher.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>) – A function that takes <code class="docutils literal notranslate"><span class="pre">Bot,</span> <span class="pre">Update,</span> <span class="pre">TelegramError</span></code> as
+arguments.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.add_handler">
+<code class="descname">add_handler</code><span class="sig-paren">(</span><em>handler</em>, <em>group=0</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.add_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a handler.</p>
+<p>TL;DR: Order and priority counts. 0 or 1 handlers per group will be used.</p>
+<p>A handler must be an instance of a subclass of <a class="reference internal" href="telegram.ext.handler.html#telegram.ext.Handler" title="telegram.ext.Handler"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Handler</span></code></a>. All handlers
+are organized in groups with a numeric value. The default group is 0. All groups will be
+evaluated for handling an update, but only 0 or 1 handler per group will be used. If
+<code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.DispatcherHandlerStop</span></code> is raised from one of the handlers, no further
+handlers (regardless of the group) will be called.</p>
+<p>The priority/order of handlers is determined as follows:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Priority of the group (lower group number == higher priority)</li>
+<li>The first handler in a group which should handle an update (see
+<a class="reference internal" href="telegram.ext.handler.html#telegram.ext.Handler.check_update" title="telegram.ext.Handler.check_update"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.ext.Handler.check_update</span></code></a>) will be used. Other handlers from the
+group will not be used. The order in which handlers were added to the group defines the
+priority.</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>handler</strong> (<a class="reference internal" href="telegram.ext.handler.html#telegram.ext.Handler" title="telegram.ext.Handler"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Handler</span></code></a>) – A Handler instance.</li>
+<li><strong>group</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, optional) – The group identifier. Default is 0.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.dispatch_error">
+<code class="descname">dispatch_error</code><span class="sig-paren">(</span><em>update</em>, <em>error</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.dispatch_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches an error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>update</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a> | None) – The update that caused the error</li>
+<li><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.TelegramError</span></code>) – The Telegram error that was raised.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.error_handlers">
+<code class="descname">error_handlers</code><em class="property"> = None</em><a class="headerlink" href="#telegram.ext.Dispatcher.error_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>] – A list of errorHandlers.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="telegram.ext.Dispatcher.get_instance">
+<em class="property">classmethod </em><code class="descname">get_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.get_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the singleton instance of this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">RuntimeError</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.groups">
+<code class="descname">groups</code><em class="property"> = None</em><a class="headerlink" href="#telegram.ext.Dispatcher.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>] – A list with all groups.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.handlers">
+<code class="descname">handlers</code><em class="property"> = None</em><a class="headerlink" href="#telegram.ext.Dispatcher.handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dict[<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>, List[<a class="reference internal" href="telegram.ext.handler.html#telegram.ext.Handler" title="telegram.ext.Handler"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Handler</span></code></a>]] – Holds the handlers per group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.process_update">
+<code class="descname">process_update</code><span class="sig-paren">(</span><em>update</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.process_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes a single update.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.TelegramError</span></code>) – The update to process.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.remove_error_handler">
+<code class="descname">remove_error_handler</code><span class="sig-paren">(</span><em>callback</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.remove_error_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes an error handler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>) – The error handler to remove.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.remove_handler">
+<code class="descname">remove_handler</code><span class="sig-paren">(</span><em>handler</em>, <em>group=0</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.remove_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a handler from the specified group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>handler</strong> (<a class="reference internal" href="telegram.ext.handler.html#telegram.ext.Handler" title="telegram.ext.Handler"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Handler</span></code></a>) – A Handler instance.</li>
+<li><strong>group</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code>, optional) – The group identifier. Default is 0.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.run_async">
+<code class="descname">run_async</code><span class="sig-paren">(</span><em>func</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.run_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queue a function (with given args/kwargs) to be run asynchronously.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>func</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>) – The function to run in the thread.</li>
+<li><strong>*args</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code>, optional) – Arguments to <cite>func</cite>.</li>
+<li><strong>**kwargs</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code>, optional) – Keyword arguments to <cite>func</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Promise</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Dispatcher.running">
+<code class="descname">running</code><em class="property"> = None</em><a class="headerlink" href="#telegram.ext.Dispatcher.running" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Indicates if this dispatcher is running.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.start">
+<code class="descname">start</code><span class="sig-paren">(</span><em>ready=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thread target of thread ‘dispatcher’.</p>
+<p>Runs in background and processes the update queue.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ready</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">threading.Event</span></code>, optional) – If specified, the event will be set once the
+dispatcher is ready.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Dispatcher.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Dispatcher.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the thread.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+
+
+
+
+
+
+
+
+
+
+
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-telegram.ext.filters">
+<span id="telegram-ext-filters-module"></span><h1>telegram.ext.filters Module<a class="headerlink" href="#module-telegram.ext.filters" title="Permalink to this headline">¶</a></h1>
+<p>This module contains the Filters for use with the MessageHandler class.</p>
+<dl class="class">
+<dt id="telegram.ext.filters.BaseFilter">
+<em class="property">class </em><code class="descclassname">telegram.ext.filters.</code><code class="descname">BaseFilter</code><a class="headerlink" href="#telegram.ext.filters.BaseFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for all Message Filters.</p>
+<p>Subclassing from this class filters to be combined using bitwise operators:</p>
+<p>And:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Filters</span><span class="o">.</span><span class="n">text</span> <span class="o">&amp;</span> <span class="n">Filters</span><span class="o">.</span><span class="n">entity</span><span class="p">(</span><span class="n">MENTION</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Filters</span><span class="o">.</span><span class="n">audio</span> <span class="o">|</span> <span class="n">Filters</span><span class="o">.</span><span class="n">video</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Not:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">~</span> <span class="n">Filters</span><span class="o">.</span><span class="n">command</span>
+</pre></div>
+</div>
+<p>Also works with more than two filters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">Filters</span><span class="o">.</span><span class="n">text</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">Filters</span><span class="o">.</span><span class="n">entity</span><span class="p">(</span><span class="n">URL</span><span class="p">)</span> <span class="o">|</span> <span class="n">Filters</span><span class="o">.</span><span class="n">entity</span><span class="p">(</span><span class="n">TEXT_LINK</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Filters</span><span class="o">.</span><span class="n">text</span> <span class="o">&amp;</span> <span class="p">(</span><span class="o">~</span> <span class="n">Filters</span><span class="o">.</span><span class="n">forwarded</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to create your own filters create a class inheriting from this class and implement
+a <cite>filter</cite> method that returns a boolean: <cite>True</cite> if the message should be handled, <cite>False</cite>
+otherwise. Note that the filters work only as class instances, not actual class objects
+(so remember to initialize your filter classes).</p>
+<p>By default the filters name (what will get printed when converted to a string for display)
+will be the class name. If you want to overwrite this assign a better name to the <cite>name</cite>
+class variable.</p>
+<dl class="attribute">
+<dt id="telegram.ext.filters.BaseFilter.name">
+<code class="descname">name</code><a class="headerlink" href="#telegram.ext.filters.BaseFilter.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> – Name for this filter. Defaults to the type of filter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.filters.BaseFilter.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.BaseFilter.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters">
+<em class="property">class </em><code class="descclassname">telegram.ext.filters.</code><code class="descname">Filters</code><a class="headerlink" href="#telegram.ext.filters.Filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Predefined filters for use as the <cite>filter</cite> argument of <a class="reference internal" href="telegram.ext.messagehandler.html#telegram.ext.MessageHandler" title="telegram.ext.MessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.MessageHandler</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.video,</span> <span class="pre">callback_method)</span></code> to filter all video
+messages. Use <code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.contact,</span> <span class="pre">callback_method)</span></code> for all contacts. etc.</p>
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.all">
+<code class="descname">all</code><em class="property"> = Filters.all</em><a class="headerlink" href="#telegram.ext.filters.Filters.all" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – All Messages.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.animation">
+<code class="descname">animation</code><em class="property"> = Filters.animation</em><a class="headerlink" href="#telegram.ext.filters.Filters.animation" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.animation.html#telegram.Animation" title="telegram.Animation"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Animation</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.audio">
+<code class="descname">audio</code><em class="property"> = Filters.audio</em><a class="headerlink" href="#telegram.ext.filters.Filters.audio" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.audio.html#telegram.Audio" title="telegram.Audio"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Audio</span></code></a>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.caption_entity">
+<em class="property">class </em><code class="descname">caption_entity</code><span class="sig-paren">(</span><em>entity_type</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.caption_entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters media messages to only allow those which have a <a class="reference internal" href="telegram.messageentity.html#telegram.MessageEntity" title="telegram.MessageEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.MessageEntity</span></code></a>
+where their <cite>type</cite> matches <cite>entity_type</cite>.</p>
+<p class="rubric">Examples</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.caption_entity("hashtag"),</span> <span class="pre">callback_method)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entity_type</strong> – Caption Entity type to check for. All types can be found as constants
+in <a class="reference internal" href="telegram.messageentity.html#telegram.MessageEntity" title="telegram.MessageEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.MessageEntity</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.caption_entity.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.caption_entity.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.chat">
+<em class="property">class </em><code class="descname">chat</code><span class="sig-paren">(</span><em>chat_id=None</em>, <em>username=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.chat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters messages to allow only those which are from specified chat ID.</p>
+<p class="rubric">Examples</p>
+<p><code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.chat(-1234),</span> <span class="pre">callback_method)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chat_id</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> | List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>], optional) – Which chat ID(s) to allow through.</li>
+<li><strong>username</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>], optional) – Which username(s) to allow through.
+If username start swith ‘@’ symbol, it will be ignored.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If chat_id and username are both present, or neither is.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.chat.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.chat.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.command">
+<code class="descname">command</code><em class="property"> = Filters.command</em><a class="headerlink" href="#telegram.ext.filters.Filters.command" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages starting with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.contact">
+<code class="descname">contact</code><em class="property"> = Filters.contact</em><a class="headerlink" href="#telegram.ext.filters.Filters.contact" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.contact.html#telegram.Contact" title="telegram.Contact"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Contact</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.document">
+<code class="descname">document</code><em class="property"> = Filters.document</em><a class="headerlink" href="#telegram.ext.filters.Filters.document" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.document.html#telegram.Document" title="telegram.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Document</span></code></a>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.entity">
+<em class="property">class </em><code class="descname">entity</code><span class="sig-paren">(</span><em>entity_type</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters messages to only allow those which have a <a class="reference internal" href="telegram.messageentity.html#telegram.MessageEntity" title="telegram.MessageEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.MessageEntity</span></code></a>
+where their <cite>type</cite> matches <cite>entity_type</cite>.</p>
+<p class="rubric">Examples</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.entity("hashtag"),</span> <span class="pre">callback_method)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entity_type</strong> – Entity type to check for. All types can be found as constants
+in <a class="reference internal" href="telegram.messageentity.html#telegram.MessageEntity" title="telegram.MessageEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.MessageEntity</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.entity.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.entity.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.forwarded">
+<code class="descname">forwarded</code><em class="property"> = Filters.forwarded</em><a class="headerlink" href="#telegram.ext.filters.Filters.forwarded" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that are forwarded.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.game">
+<code class="descname">game</code><em class="property"> = Filters.game</em><a class="headerlink" href="#telegram.ext.filters.Filters.game" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.game.html#telegram.Game" title="telegram.Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Game</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.group">
+<code class="descname">group</code><em class="property"> = Filters.group</em><a class="headerlink" href="#telegram.ext.filters.Filters.group" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages sent in a group chat.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.invoice">
+<code class="descname">invoice</code><em class="property"> = Filters.invoice</em><a class="headerlink" href="#telegram.ext.filters.Filters.invoice" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.invoice.html#telegram.Invoice" title="telegram.Invoice"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Invoice</span></code></a>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.language">
+<em class="property">class </em><code class="descname">language</code><span class="sig-paren">(</span><em>lang</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.language" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters messages to only allow those which are from users with a certain language code.</p>
+<p>Note: According to telegrams documentation, every single user does not have the
+<cite>language_code</cite> attribute.</p>
+<p class="rubric">Examples</p>
+<p><code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.language("en"),</span> <span class="pre">callback_method)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lang</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>]) – Which language code(s) to allow through. This
+will be matched using <code class="docutils literal notranslate"><span class="pre">.startswith</span></code> meaning that ‘en’ will match both ‘en_US’
+and ‘en_GB’.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.language.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.language.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.location">
+<code class="descname">location</code><em class="property"> = Filters.location</em><a class="headerlink" href="#telegram.ext.filters.Filters.location" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.location.html#telegram.Location" title="telegram.Location"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Location</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.passport_data">
+<code class="descname">passport_data</code><em class="property"> = Filters.passport_data</em><a class="headerlink" href="#telegram.ext.filters.Filters.passport_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain a <a class="reference internal" href="telegram.passportdata.html#telegram.PassportData" title="telegram.PassportData"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.PassportData</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.photo">
+<code class="descname">photo</code><em class="property"> = Filters.photo</em><a class="headerlink" href="#telegram.ext.filters.Filters.photo" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.photosize.html#telegram.PhotoSize" title="telegram.PhotoSize"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.PhotoSize</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.private">
+<code class="descname">private</code><em class="property"> = Filters.private</em><a class="headerlink" href="#telegram.ext.filters.Filters.private" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages sent in a private chat.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.regex">
+<em class="property">class </em><code class="descname">regex</code><span class="sig-paren">(</span><em>pattern</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters updates by searching for an occurence of <code class="docutils literal notranslate"><span class="pre">pattern</span></code> in the message text.
+The <code class="docutils literal notranslate"><span class="pre">re.search</span></code> function is used to determine whether an update should be filtered.
+Refer to the documentation of the <code class="docutils literal notranslate"><span class="pre">re</span></code> module for more information.</p>
+<p>Note: Does not allow passing groups or a groupdict like the <code class="docutils literal notranslate"><span class="pre">RegexHandler</span></code> yet,
+but this will probably be implemented in a future update, gradually phasing out the
+RegexHandler (see <a class="reference external" href="https://github.com/python-telegram-bot/python-telegram-bot/issues/835">https://github.com/python-telegram-bot/python-telegram-bot/issues/835</a>).</p>
+<p class="rubric">Examples</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">CommandHandler("start",</span> <span class="pre">deep_linked_callback,</span> <span class="pre">Filters.regex('parameter'))</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pattern</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">Pattern</span></code>) – The regex pattern.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.regex.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.regex.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.reply">
+<code class="descname">reply</code><em class="property"> = Filters.reply</em><a class="headerlink" href="#telegram.ext.filters.Filters.reply" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that are a reply to another message.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.status_update">
+<code class="descname">status_update</code><em class="property"> = Filters.status_update</em><a class="headerlink" href="#telegram.ext.filters.Filters.status_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subset for messages containing a status update.</p>
+<p class="rubric">Examples</p>
+<p>Use these filters like: <code class="docutils literal notranslate"><span class="pre">Filters.status_update.new_chat_members</span></code> etc. Or use just
+<code class="docutils literal notranslate"><span class="pre">Filters.status_update</span></code> for all status update messages.</p>
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.chat_created">
+<code class="descname">chat_created</code><a class="headerlink" href="#telegram.ext.filters.Filters.chat_created" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.group_chat_created" title="telegram.Message.group_chat_created"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.group_chat_created</span></code></a>,
+<a class="reference internal" href="telegram.message.html#telegram.Message.supergroup_chat_created" title="telegram.Message.supergroup_chat_created"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.supergroup_chat_created</span></code></a> or
+<a class="reference internal" href="telegram.message.html#telegram.Message.channel_chat_created" title="telegram.Message.channel_chat_created"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.channel_chat_created</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.delete_chat_photo">
+<code class="descname">delete_chat_photo</code><a class="headerlink" href="#telegram.ext.filters.Filters.delete_chat_photo" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.delete_chat_photo" title="telegram.Message.delete_chat_photo"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.delete_chat_photo</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.left_chat_member">
+<code class="descname">left_chat_member</code><a class="headerlink" href="#telegram.ext.filters.Filters.left_chat_member" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.left_chat_member" title="telegram.Message.left_chat_member"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.left_chat_member</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.migrate">
+<code class="descname">migrate</code><a class="headerlink" href="#telegram.ext.filters.Filters.migrate" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.migrate_from_chat_id" title="telegram.Message.migrate_from_chat_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.migrate_from_chat_id</span></code></a> or
+:attr: <cite>telegram.Message.migrate_from_chat_id</cite>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.new_chat_members">
+<code class="descname">new_chat_members</code><a class="headerlink" href="#telegram.ext.filters.Filters.new_chat_members" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.new_chat_members" title="telegram.Message.new_chat_members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.new_chat_members</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.new_chat_photo">
+<code class="descname">new_chat_photo</code><a class="headerlink" href="#telegram.ext.filters.Filters.new_chat_photo" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.new_chat_photo" title="telegram.Message.new_chat_photo"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.new_chat_photo</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.new_chat_title">
+<code class="descname">new_chat_title</code><a class="headerlink" href="#telegram.ext.filters.Filters.new_chat_title" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.new_chat_title" title="telegram.Message.new_chat_title"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.new_chat_title</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.pinned_message">
+<code class="descname">pinned_message</code><a class="headerlink" href="#telegram.ext.filters.Filters.pinned_message" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain
+<a class="reference internal" href="telegram.message.html#telegram.Message.pinned_message" title="telegram.Message.pinned_message"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.Message.pinned_message</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.sticker">
+<code class="descname">sticker</code><em class="property"> = Filters.sticker</em><a class="headerlink" href="#telegram.ext.filters.Filters.sticker" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.sticker.html#telegram.Sticker" title="telegram.Sticker"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Sticker</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.successful_payment">
+<code class="descname">successful_payment</code><em class="property"> = Filters.successful_payment</em><a class="headerlink" href="#telegram.ext.filters.Filters.successful_payment" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that confirm a <a class="reference internal" href="telegram.successfulpayment.html#telegram.SuccessfulPayment" title="telegram.SuccessfulPayment"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.SuccessfulPayment</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.text">
+<code class="descname">text</code><em class="property"> = Filters.text</em><a class="headerlink" href="#telegram.ext.filters.Filters.text" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Text Messages.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.Filters.user">
+<em class="property">class </em><code class="descname">user</code><span class="sig-paren">(</span><em>user_id=None</em>, <em>username=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Filters messages to allow only those which are from specified user ID.</p>
+<p class="rubric">Examples</p>
+<p><code class="docutils literal notranslate"><span class="pre">MessageHandler(Filters.user(1234),</span> <span class="pre">callback_method)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> | List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code>], optional) – Which user ID(s) to allow through.</li>
+<li><strong>username</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | List[<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>], optional) – Which username(s) to allow through.
+If username starts with ‘@’ symbol, it will be ignored.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If chat_id and username are both present, or neither is.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.Filters.user.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.Filters.user.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.venue">
+<code class="descname">venue</code><em class="property"> = Filters.venue</em><a class="headerlink" href="#telegram.ext.filters.Filters.venue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.venue.html#telegram.Venue" title="telegram.Venue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Venue</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.video">
+<code class="descname">video</code><em class="property"> = Filters.video</em><a class="headerlink" href="#telegram.ext.filters.Filters.video" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.video.html#telegram.Video" title="telegram.Video"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Video</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.video_note">
+<code class="descname">video_note</code><em class="property"> = Filters.video_note</em><a class="headerlink" href="#telegram.ext.filters.Filters.video_note" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.videonote.html#telegram.VideoNote" title="telegram.VideoNote"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.VideoNote</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.filters.Filters.voice">
+<code class="descname">voice</code><em class="property"> = Filters.voice</em><a class="headerlink" href="#telegram.ext.filters.Filters.voice" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code> – Messages that contain <a class="reference internal" href="telegram.voice.html#telegram.Voice" title="telegram.Voice"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Voice</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.InvertedFilter">
+<em class="property">class </em><code class="descclassname">telegram.ext.filters.</code><code class="descname">InvertedFilter</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.InvertedFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Represents a filter that has been inverted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> – The filter to invert.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.InvertedFilter.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.InvertedFilter.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="telegram.ext.filters.MergedFilter">
+<em class="property">class </em><code class="descclassname">telegram.ext.filters.</code><code class="descname">MergedFilter</code><span class="sig-paren">(</span><em>base_filter</em>, <em>and_filter=None</em>, <em>or_filter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.MergedFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#telegram.ext.filters.BaseFilter" title="telegram.ext.filters.BaseFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.filters.BaseFilter</span></code></a></p>
+<p>Represents a filter consisting of two other filters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>base_filter</strong> – Filter 1 of the merged filter</li>
+<li><strong>and_filter</strong> – Optional filter to “and” with base_filter. Mutually exclusive with or_filter.</li>
+<li><strong>or_filter</strong> – Optional filter to “or” with base_filter. Mutually exclusive with and_filter.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.filters.MergedFilter.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.filters.MergedFilter.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be overwritten.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference internal" href="telegram.message.html#telegram.Message" title="telegram.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Message</span></code></a>) – The message that is tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+           <div itemprop="articleBody">
+            
+  <div class="section" id="telegram-ext-handler">
+<h1>telegram.ext.Handler<a class="headerlink" href="#telegram-ext-handler" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="telegram.ext.Handler">
+<em class="property">class </em><code class="descclassname">telegram.ext.</code><code class="descname">Handler</code><span class="sig-paren">(</span><em>callback</em>, <em>pass_update_queue=False</em>, <em>pass_job_queue=False</em>, <em>pass_user_data=False</em>, <em>pass_chat_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The base class for all update handlers. Create custom handlers by inheriting from it.</p>
+<dl class="attribute">
+<dt id="telegram.ext.Handler.callback">
+<code class="descname">callback</code><a class="headerlink" href="#telegram.ext.Handler.callback" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code> – The callback function for this handler.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Handler.pass_update_queue">
+<code class="descname">pass_update_queue</code><a class="headerlink" href="#telegram.ext.Handler.pass_update_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">update_queue</span></code> will be
+passed to the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Handler.pass_job_queue">
+<code class="descname">pass_job_queue</code><a class="headerlink" href="#telegram.ext.Handler.pass_job_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">job_queue</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Handler.pass_user_data">
+<code class="descname">pass_user_data</code><a class="headerlink" href="#telegram.ext.Handler.pass_user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">user_data</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.Handler.pass_chat_data">
+<code class="descname">pass_chat_data</code><a class="headerlink" href="#telegram.ext.Handler.pass_chat_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">chat_data</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#telegram.ext.Handler.pass_user_data" title="telegram.ext.Handler.pass_user_data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pass_user_data</span></code></a> and <a class="reference internal" href="#telegram.ext.Handler.pass_chat_data" title="telegram.ext.Handler.pass_chat_data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pass_chat_data</span></code></a> determine whether a <code class="docutils literal notranslate"><span class="pre">dict</span></code> you
+can use to keep any data in will be sent to the <a class="reference internal" href="#telegram.ext.Handler.callback" title="telegram.ext.Handler.callback"><code class="xref py py-attr docutils literal notranslate"><span class="pre">callback</span></code></a> function. Related to
+either the user or the chat that the update was sent in. For each update from the same user
+or in the same chat, it will be the same <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>callback</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>) – A function that takes <code class="docutils literal notranslate"><span class="pre">bot,</span> <span class="pre">update</span></code> as positional arguments.
+It will be called when the <a class="reference internal" href="#telegram.ext.Handler.check_update" title="telegram.ext.Handler.check_update"><code class="xref py py-attr docutils literal notranslate"><span class="pre">check_update</span></code></a> has determined that an update should be
+processed by this handler.</li>
+<li><strong>pass_update_queue</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">update_queue</span></code> will be passed to the callback function. It will be the <code class="docutils literal notranslate"><span class="pre">Queue</span></code>
+instance used by the <a class="reference internal" href="telegram.ext.updater.html#telegram.ext.Updater" title="telegram.ext.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Updater</span></code></a> and <a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>
+that contains new updates which can be used to insert updates. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pass_job_queue</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">job_queue</span></code> will be passed to the callback function. It will be a
+<a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a> instance created by the <a class="reference internal" href="telegram.ext.updater.html#telegram.ext.Updater" title="telegram.ext.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Updater</span></code></a>
+which can be used to schedule new jobs. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pass_user_data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">user_data</span></code> will be passed to the callback function. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pass_chat_data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">chat_data</span></code> will be passed to the callback function. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.Handler.check_update">
+<code class="descname">check_update</code><span class="sig-paren">(</span><em>update</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Handler.check_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is called to determine if an update should be handled by
+this handler instance. It should always be overridden.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a>) – The update to be tested.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Handler.collect_optional_args">
+<code class="descname">collect_optional_args</code><span class="sig-paren">(</span><em>dispatcher</em>, <em>update=None</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Handler.collect_optional_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the optional arguments that are the same for all types of handlers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dispatcher</strong> (<a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>) – The dispatcher.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.Handler.handle_update">
+<code class="descname">handle_update</code><span class="sig-paren">(</span><em>update</em>, <em>dispatcher</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.Handler.handle_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is called if it was determined that an update should indeed
+be handled by this instance. It should also be overridden, but in most
+cases call <code class="docutils literal notranslate"><span class="pre">self.callback(dispatcher.bot,</span> <span class="pre">update)</span></code>, possibly along with
+optional arguments. To work with the <code class="docutils literal notranslate"><span class="pre">ConversationHandler</span></code>, this method should return the
+value returned from <code class="docutils literal notranslate"><span class="pre">self.callback</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>update</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a>) – The update to be handled.</li>
+<li><strong>dispatcher</strong> (<a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>) – The dispatcher to collect optional args.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           <div itemprop="articleBody">
+            
+  <div class="section" id="telegram-ext-callbackqueryhandler">
+<h1>telegram.ext.CallbackQueryHandler<a class="headerlink" href="#telegram-ext-callbackqueryhandler" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="telegram.ext.CallbackQueryHandler">
+<em class="property">class </em><code class="descclassname">telegram.ext.</code><code class="descname">CallbackQueryHandler</code><span class="sig-paren">(</span><em>callback</em>, <em>pass_update_queue=False</em>, <em>pass_job_queue=False</em>, <em>pattern=None</em>, <em>pass_groups=False</em>, <em>pass_groupdict=False</em>, <em>pass_user_data=False</em>, <em>pass_chat_data=False</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.CallbackQueryHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.handler.Handler</span></code></p>
+<p>Handler class to handle Telegram callback queries. Optionally based on a regex.</p>
+<p>Read the documentation of the <code class="docutils literal notranslate"><span class="pre">re</span></code> module for more information.</p>
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.callback">
+<code class="descname">callback</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.callback" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code> – The callback function for this handler.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_update_queue">
+<code class="descname">pass_update_queue</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_update_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">update_queue</span></code> will be
+passed to the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_job_queue">
+<code class="descname">pass_job_queue</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_job_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">job_queue</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pattern">
+<code class="descname">pattern</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pattern" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <cite>Pattern</cite> – Optional. Regex pattern to test
+<a class="reference internal" href="telegram.callbackquery.html#telegram.CallbackQuery.data" title="telegram.CallbackQuery.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.CallbackQuery.data</span></code></a> against.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_groups">
+<code class="descname">pass_groups</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">groups</span></code> will be passed to the
+callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_groupdict">
+<code class="descname">pass_groupdict</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_groupdict" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">groupdict</span></code>. will be passed to
+the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_user_data">
+<code class="descname">pass_user_data</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">user_data</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="telegram.ext.CallbackQueryHandler.pass_chat_data">
+<code class="descname">pass_chat_data</code><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.pass_chat_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> – Optional. Determines whether <code class="docutils literal notranslate"><span class="pre">chat_data</span></code> will be passed to
+the callback function.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#telegram.ext.CallbackQueryHandler.pass_user_data" title="telegram.ext.CallbackQueryHandler.pass_user_data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pass_user_data</span></code></a> and <a class="reference internal" href="#telegram.ext.CallbackQueryHandler.pass_chat_data" title="telegram.ext.CallbackQueryHandler.pass_chat_data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pass_chat_data</span></code></a> determine whether a <code class="docutils literal notranslate"><span class="pre">dict</span></code> you
+can use to keep any data in will be sent to the <a class="reference internal" href="#telegram.ext.CallbackQueryHandler.callback" title="telegram.ext.CallbackQueryHandler.callback"><code class="xref py py-attr docutils literal notranslate"><span class="pre">callback</span></code></a> function. Related to
+either the user or the chat that the update was sent in. For each update from the same user
+or in the same chat, it will be the same <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>callback</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">callable</span></code>) – A function that takes <code class="docutils literal notranslate"><span class="pre">bot,</span> <span class="pre">update</span></code> as positional arguments.
+It will be called when the <a class="reference internal" href="#telegram.ext.CallbackQueryHandler.check_update" title="telegram.ext.CallbackQueryHandler.check_update"><code class="xref py py-attr docutils literal notranslate"><span class="pre">check_update</span></code></a> has determined that an update should be
+processed by this handler.</li>
+<li><strong>pass_update_queue</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">update_queue</span></code> will be passed to the callback function. It will be the <code class="docutils literal notranslate"><span class="pre">Queue</span></code>
+instance used by the <a class="reference internal" href="telegram.ext.updater.html#telegram.ext.Updater" title="telegram.ext.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Updater</span></code></a> and <a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>
+that contains new updates which can be used to insert updates. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pass_job_queue</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">job_queue</span></code> will be passed to the callback function. It will be a
+<a class="reference internal" href="telegram.ext.jobqueue.html#telegram.ext.JobQueue" title="telegram.ext.JobQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.JobQueue</span></code></a> instance created by the <a class="reference internal" href="telegram.ext.updater.html#telegram.ext.Updater" title="telegram.ext.Updater"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Updater</span></code></a>
+which can be used to schedule new jobs. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pattern</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> | <cite>Pattern</cite>, optional) – Regex pattern. If not <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">re.match</span></code>
+is used on <a class="reference internal" href="telegram.callbackquery.html#telegram.CallbackQuery.data" title="telegram.CallbackQuery.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">telegram.CallbackQuery.data</span></code></a> to determine if an update should be
+handled by this handler.</li>
+<li><strong>pass_groups</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If the callback should be passed the result of
+<code class="docutils literal notranslate"><span class="pre">re.match(pattern,</span> <span class="pre">data).groups()</span></code> as a keyword argument called <code class="docutils literal notranslate"><span class="pre">groups</span></code>.
+Default is <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+<li><strong>pass_groupdict</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If the callback should be passed the result of
+<code class="docutils literal notranslate"><span class="pre">re.match(pattern,</span> <span class="pre">data).groupdict()</span></code> as a keyword argument called <code class="docutils literal notranslate"><span class="pre">groupdict</span></code>.
+Default is <code class="docutils literal notranslate"><span class="pre">False</span></code></li>
+<li><strong>pass_user_data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">user_data</span></code> will be passed to the callback function. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+<li><strong>pass_chat_data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a keyword argument called
+<code class="docutils literal notranslate"><span class="pre">chat_data</span></code> will be passed to the callback function. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="telegram.ext.CallbackQueryHandler.check_update">
+<code class="descname">check_update</code><span class="sig-paren">(</span><em>update</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.check_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines whether an update should be passed to this handlers <a class="reference internal" href="#telegram.ext.CallbackQueryHandler.callback" title="telegram.ext.CallbackQueryHandler.callback"><code class="xref py py-attr docutils literal notranslate"><span class="pre">callback</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update</strong> (<a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a>) – Incoming telegram update.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="telegram.ext.CallbackQueryHandler.handle_update">
+<code class="descname">handle_update</code><span class="sig-paren">(</span><em>update</em>, <em>dispatcher</em><span class="sig-paren">)</span><a class="headerlink" href="#telegram.ext.CallbackQueryHandler.handle_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the update to the <a class="reference internal" href="#telegram.ext.CallbackQueryHandler.callback" title="telegram.ext.CallbackQueryHandler.callback"><code class="xref py py-attr docutils literal notranslate"><span class="pre">callback</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<colgroup><col class="field-name">
+<col class="field-body">
+</colgroup><tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>update</strong> (<a class="reference internal" href="telegram.update.html#telegram.Update" title="telegram.Update"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.Update</span></code></a>) – Incoming telegram update.</li>
+<li><strong>dispatcher</strong> (<a class="reference internal" href="telegram.ext.dispatcher.html#telegram.ext.Dispatcher" title="telegram.ext.Dispatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">telegram.ext.Dispatcher</span></code></a>) – Dispatcher that originated the Update.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           
